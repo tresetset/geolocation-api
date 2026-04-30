@@ -76,6 +76,12 @@ Four endpoints, all under `/api/v1/geolocations`, all authenticated via `X-Api-K
 | missing/invalid API key | 401 | `unauthorized` |
 | not found | 404 | `not_found` |
 
+## POST /geolocations — `query` as a virtual input attribute
+
+The `query` field in the POST request body is not a stored resource attribute — it is a transient input that the server resolves to an IP address before persisting. Strictly speaking, JSON:API expects `attributes` in a POST body to mirror the resource's own fields. `query` intentionally deviates from this: it is an input DTO rather than a resource field.
+
+This is a deliberate architectural decision driven by usability. The alternative — requiring the client to pre-resolve a hostname or strip a URL down to a bare IP before calling the API — would push DNS resolution and validation logic to every consumer of the API. Accepting `query` server-side keeps that complexity in one place, makes the API self-contained, and is a widely understood convention (similar to search or lookup endpoints across many REST APIs). The deviation is minimal and the intent is immediately readable.
+
 ## POST /geolocations — endpoint contract
 
 `POST /api/v1/geolocations` accepts a single `query` attribute (bare IP, URL, or hostname). If the IP has not been seen before, the record is created and `201 Created` is returned. If the IP already exists, geo data is refreshed from the provider and `200 OK` is returned. This upsert design keeps the API idempotent from the caller's perspective — repeated calls are safe and always return fresh data. `Location` header is set on `201`.
