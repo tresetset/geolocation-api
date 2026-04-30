@@ -28,7 +28,7 @@ The current provider is [ipstack](https://ipstack.com). The geolocation module c
 |---|---|---|
 | `id` | uuid | PK, generated via `before_create` |
 | `ip` | inet | not null, unique |
-| `url_hostname` | string | nullable — original URL or hostname when input was not a bare IP; last-write wins |
+| `url_hostname` | string | nullable — hostname extracted from the query when input was not a bare IP (e.g. `google.com` for `https://google.com/path`); last-write wins |
 | `ip_type` | string | not null — `"ipv4"` or `"ipv6"` as returned by provider |
 | `country_code` | string(2) | nullable — ISO 3166-1 alpha-2 |
 | `city` | string | nullable |
@@ -136,7 +136,7 @@ The route constraint `constraints: { id: /[^\/]+/ }` is set so that IP addresses
       "updated_at": "2026-04-30T10:15:00Z"
     },
     "links": {
-      "self": "/api/v1/geolocations/550e8400-e29b-41d4-a716-446655440000"
+      "self": "/api/v1/geolocations/8.8.8.8"
     }
   },
   "jsonapi": { "version": "1.1" }
@@ -151,7 +151,6 @@ The route constraint `constraints: { id: /[^\/]+/ }` is set so that IP addresses
       "status": "422",
       "code": "reserved_ip_address",
       "title": "Reserved IP address",
-      "detail": "The IP '192.168.1.1' is private/reserved and cannot be geolocated.",
       "source": { "pointer": "/data/attributes/query" }
     }
   ]

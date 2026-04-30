@@ -119,7 +119,7 @@ curl -X POST http://localhost:3000/api/v1/geolocations \
       "updated_at": "2026-04-30T10:15:00Z"
     },
     "links": {
-      "self": "/api/v1/geolocations/550e8400-e29b-41d4-a716-446655440000"
+      "self": "/api/v1/geolocations/8.8.8.8"
     }
   },
   "jsonapi": { "version": "1.1" }
@@ -144,7 +144,7 @@ curl "http://localhost:3000/api/v1/geolocations" \
       "type": "geolocations",
       "id": "550e8400-e29b-41d4-a716-446655440000",
       "attributes": { "ip": "8.8.8.8", "ip_type": "ipv4", "country_code": "US", "..." : "..." },
-      "links": { "self": "/api/v1/geolocations/550e8400-e29b-41d4-a716-446655440000" }
+      "links": { "self": "/api/v1/geolocations/8.8.8.8" }
     }
   ],
   "meta": { "page": 1, "per_page": 20, "total": 1 },
@@ -200,7 +200,7 @@ All endpoints require the `X-Api-Key` header. All responses and errors conform t
 | Method | Path | Description |
 |--------|------|-------------|
 | `POST` | `/api/v1/geolocations` | Create or refresh a geolocation for an IP, URL, or hostname |
-| `GET` | `/api/v1/geolocations` | Paginated list; filter by `?query=` (IP, URL, or hostname) |
+| `GET` | `/api/v1/geolocations` | Paginated list; filter by `?filter[query]=` (IP, URL, or hostname) |
 | `GET` | `/api/v1/geolocations/:query` | Retrieve a single geolocation by IP, URL, or hostname |
 | `DELETE` | `/api/v1/geolocations/:query` | Delete a geolocation by IP, URL, or hostname |
 

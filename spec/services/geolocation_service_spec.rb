@@ -34,7 +34,7 @@ RSpec.describe GeolocationService do
       it "stores url_hostname when query was a URL" do
         allow(Resolv).to receive(:getaddress).with("google.com").and_return("8.8.8.8")
         result = service.call("https://google.com")
-        expect(result[:geolocation].url_hostname).to eq("https://google.com")
+        expect(result[:geolocation].url_hostname).to eq("google.com")
       end
     end
 

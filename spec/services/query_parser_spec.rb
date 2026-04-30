@@ -17,11 +17,11 @@ RSpec.describe QueryParser do
     end
 
     context "full URL" do
-      it "resolves hostname to IP and stores original URL in url_hostname" do
+      it "resolves hostname to IP and stores extracted hostname in url_hostname" do
         allow(Resolv).to receive(:getaddress).with("google.com").and_return("142.250.74.46")
         result = described_class.new("https://google.com/search?q=hello").parse
         expect(result[:ip]).to eq("142.250.74.46")
-        expect(result[:url_hostname]).to eq("https://google.com/search?q=hello")
+        expect(result[:url_hostname]).to eq("google.com")
       end
 
       it "raises UnresolvableHost when domain does not resolve" do

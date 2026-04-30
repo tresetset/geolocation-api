@@ -51,7 +51,7 @@ class QueryParser
     host = URI.parse(@query).host
     raise InvalidQuery if host.blank?
 
-    parse_as_hostname(host, url_hostname: @query)
+    parse_as_hostname(host, url_hostname: host)
   rescue URI::InvalidURIError
     raise InvalidQuery
   end

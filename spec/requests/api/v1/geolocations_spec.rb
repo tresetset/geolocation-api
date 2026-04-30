@@ -67,13 +67,13 @@ RSpec.describe "POST /api/v1/geolocations", type: :request do
   describe "201 Created — full URL", :vcr do
     before { allow(Resolv).to receive(:getaddress).with("google.com").and_return("142.250.120.100") }
 
-    it "stores original URL in url_hostname and resolves IP" do
+    it "stores hostname (not full URL) in url_hostname and resolves IP" do
       post_geolocation("https://google.com/search?q=hello")
 
       expect(response).to have_http_status(:created)
 
       attrs = json.dig(:data, :attributes)
-      expect(attrs[:url_hostname]).to eq("https://google.com/search?q=hello")
+      expect(attrs[:url_hostname]).to eq("google.com")
       expect(attrs[:ip]).to be_present
       expect(attrs[:ip_type]).to be_present
     end
