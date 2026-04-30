@@ -126,6 +126,8 @@ curl -X POST http://localhost:3000/api/v1/geolocations \
 }
 ```
 
+On `201 Created` the response includes `Location: /api/v1/geolocations/8.8.8.8`.
+
 **Response — 200 OK (same IP again):** identical shape, same `id` and `created_at`, refreshed `updated_at` and geo data.
 
 **List all geolocations (paginated):**
@@ -165,22 +167,31 @@ curl -g "http://localhost:3000/api/v1/geolocations?filter[query]=8.8.8.8" \
 
 Returns the same collection shape with 0 or 1 result.
 
-**Get geolocation by ID:**
+**Get geolocation by IP, URL, or hostname:**
 ```bash
-curl http://localhost:3000/api/v1/geolocations/550e8400-e29b-41d4-a716-446655440000 \
+curl http://localhost:3000/api/v1/geolocations/8.8.8.8 \
+  -H "Accept: application/vnd.api+json" \
+  -H "X-Api-Key: your_secret_api_key"
+
+# or by hostname
+curl http://localhost:3000/api/v1/geolocations/dns.google \
   -H "Accept: application/vnd.api+json" \
   -H "X-Api-Key: your_secret_api_key"
 ```
 
-Returns `200 OK` with single-resource JSON:API shape, or `404` if not found.
+Returns `200 OK` with single-resource JSON:API shape, `404` if not found, or `422` for invalid/private IPs.
 
-**Delete geolocation:**
+**Delete geolocation by IP, URL, or hostname:**
 ```bash
-curl -X DELETE http://localhost:3000/api/v1/geolocations/550e8400-e29b-41d4-a716-446655440000 \
+curl -X DELETE http://localhost:3000/api/v1/geolocations/8.8.8.8 \
+  -H "X-Api-Key: your_secret_api_key"
+
+# or by hostname (resolved to IP server-side)
+curl -X DELETE http://localhost:3000/api/v1/geolocations/google.com \
   -H "X-Api-Key: your_secret_api_key"
 ```
 
-Returns `204 No Content`, or `404` if not found.
+Returns `204 No Content`. Returns `404` if no record exists for that IP. Returns `422` for invalid or private IPs.
 
 ## Endpoints
 
@@ -190,8 +201,8 @@ All endpoints require the `X-Api-Key` header. All responses and errors conform t
 |--------|------|-------------|
 | `POST` | `/api/v1/geolocations` | Create or refresh a geolocation for an IP, URL, or hostname |
 | `GET` | `/api/v1/geolocations` | Paginated list; filter by `?query=` (IP, URL, or hostname) |
-| `GET` | `/api/v1/geolocations/:id` | Retrieve a single geolocation by UUID |
-| `DELETE` | `/api/v1/geolocations/:id` | Delete a geolocation record |
+| `GET` | `/api/v1/geolocations/:query` | Retrieve a single geolocation by IP, URL, or hostname |
+| `DELETE` | `/api/v1/geolocations/:query` | Delete a geolocation by IP, URL, or hostname |
 
 ### Status codes
 

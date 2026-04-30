@@ -27,7 +27,7 @@ RSpec.describe "POST /api/v1/geolocations", type: :request do
       post_geolocation("8.8.8.8")
 
       expect(response).to have_http_status(:created)
-      expect(response.headers["Location"]).to match(%r{/api/v1/geolocations/\S+})
+      expect(response.headers["Location"]).to eq("/api/v1/geolocations/8.8.8.8")
       expect(response.content_type).to include("application/vnd.api+json")
 
       data  = json[:data]
@@ -245,6 +245,21 @@ RSpec.describe "POST /api/v1/geolocations", type: :request do
       expect(json.dig(:errors, 0, :code)).to eq("provider_error")
     end
   end
+
+  describe "422 — provider returns null coordinates" do
+    it "returns 422 when provider omits latitude/longitude" do
+      stub_request(:get, /api\.ipstack\.com/)
+        .to_return(status: 200, body: {
+          ip: "8.8.8.8", type: "ipv4", country_code: "US",
+          city: "Mountain View", latitude: nil, longitude: nil
+        }.to_json)
+
+      post_geolocation("8.8.8.8")
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(json[:errors]).to be_present
+    end
+  end
 end
 
 RSpec.describe "GET /api/v1/geolocations", type: :request do
@@ -325,7 +340,7 @@ RSpec.describe "GET /api/v1/geolocations", type: :request do
   end
 end
 
-RSpec.describe "GET /api/v1/geolocations/:id", type: :request do
+RSpec.describe "GET /api/v1/geolocations/:query", type: :request do
   let(:api_key) { ENV.fetch("API_KEY", "test-api-key") }
   let(:headers) do
     {
@@ -339,8 +354,8 @@ RSpec.describe "GET /api/v1/geolocations/:id", type: :request do
   end
 
   describe "200 OK" do
-    it "returns geolocation JSON:API shape for existing record" do
-      geolocation = Geolocation.create!(
+    let!(:geolocation) do
+      Geolocation.create!(
         ip: "8.8.8.8",
         ip_type: "ipv4",
         country_code: "US",
@@ -348,8 +363,10 @@ RSpec.describe "GET /api/v1/geolocations/:id", type: :request do
         latitude: 37.386,
         longitude: -122.0838
       )
+    end
 
-      get "/api/v1/geolocations/#{geolocation.id}", headers: headers
+    it "returns geolocation by IP address" do
+      get "/api/v1/geolocations/8.8.8.8", headers: headers
 
       expect(response).to have_http_status(:ok)
       expect(response.content_type).to include("application/vnd.api+json")
@@ -368,11 +385,20 @@ RSpec.describe "GET /api/v1/geolocations/:id", type: :request do
 
       expect(json[:jsonapi]).to eq({ version: "1.1" })
     end
+
+    it "returns geolocation by hostname" do
+      allow(Resolv).to receive(:getaddress).with("dns.google").and_return("8.8.8.8")
+
+      get "/api/v1/geolocations/dns.google", headers: headers
+
+      expect(response).to have_http_status(:ok)
+      expect(json.dig(:data, :attributes, :ip)).to eq("8.8.8.8")
+    end
   end
 
   describe "401 — missing API key" do
     it "returns unauthorized" do
-      get "/api/v1/geolocations/some-id", headers: headers.except("X-Api-Key")
+      get "/api/v1/geolocations/8.8.8.8", headers: headers.except("X-Api-Key")
 
       expect(response).to have_http_status(:unauthorized)
       expect(json.dig(:errors, 0, :code)).to eq("unauthorized")
@@ -380,11 +406,27 @@ RSpec.describe "GET /api/v1/geolocations/:id", type: :request do
   end
 
   describe "404 — not found" do
-    it "returns not found for unknown id" do
-      get "/api/v1/geolocations/non-existent-id", headers: headers
+    it "returns not found for valid IP not in database" do
+      get "/api/v1/geolocations/1.2.3.4", headers: headers
 
       expect(response).to have_http_status(:not_found)
       expect(json.dig(:errors, 0, :code)).to eq("not_found")
+    end
+  end
+
+  describe "422 — invalid query" do
+    it "returns invalid_query for a malformed IP" do
+      get "/api/v1/geolocations/not-an-ip", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json.dig(:errors, 0, :code)).to eq("invalid_query")
+    end
+
+    it "returns reserved_ip_address for a private IP" do
+      get "/api/v1/geolocations/10.0.0.1", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json.dig(:errors, 0, :code)).to eq("reserved_ip_address")
     end
   end
 end
@@ -402,20 +444,30 @@ RSpec.describe "DELETE /api/v1/geolocations/:id", type: :request do
   end
 
   describe "204 No Content" do
-    it "deletes the record and returns no body" do
-      geolocation = Geolocation.create!(ip: "1.1.1.1", ip_type: "ipv4", country_code: "AU", latitude: 35.0, longitude: 149.0)
+    it "deletes by IP address" do
+      Geolocation.create!(ip: "1.1.1.1", ip_type: "ipv4", country_code: "AU", latitude: 35.0, longitude: 149.0)
 
-      delete "/api/v1/geolocations/#{geolocation.id}", headers: headers
+      delete "/api/v1/geolocations/1.1.1.1", headers: headers
 
       expect(response).to have_http_status(:no_content)
       expect(response.body).to be_empty
-      expect(Geolocation.find_by(id: geolocation.id)).to be_nil
+      expect(Geolocation.find_by(ip: "1.1.1.1")).to be_nil
+    end
+
+    it "deletes by hostname" do
+      Geolocation.create!(ip: "1.1.1.1", ip_type: "ipv4", country_code: "AU", latitude: 35.0, longitude: 149.0)
+      allow(Resolv).to receive(:getaddress).with("one.one.one.one").and_return("1.1.1.1")
+
+      delete "/api/v1/geolocations/one.one.one.one", headers: headers
+
+      expect(response).to have_http_status(:no_content)
+      expect(Geolocation.find_by(ip: "1.1.1.1")).to be_nil
     end
   end
 
   describe "401 — missing API key" do
     it "returns unauthorized" do
-      delete "/api/v1/geolocations/some-id", headers: {}
+      delete "/api/v1/geolocations/1.1.1.1", headers: {}
 
       expect(response).to have_http_status(:unauthorized)
       expect(json.dig(:errors, 0, :code)).to eq("unauthorized")
@@ -423,11 +475,50 @@ RSpec.describe "DELETE /api/v1/geolocations/:id", type: :request do
   end
 
   describe "404 — not found" do
-    it "returns not found for unknown id" do
-      delete "/api/v1/geolocations/non-existent-id", headers: headers
+    it "returns not found for valid IP not in database" do
+      delete "/api/v1/geolocations/1.2.3.4", headers: headers
 
       expect(response).to have_http_status(:not_found)
       expect(json.dig(:errors, 0, :code)).to eq("not_found")
     end
+  end
+
+  describe "422 — invalid query" do
+    it "returns invalid_query for a malformed IP" do
+      delete "/api/v1/geolocations/not-an-ip", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json.dig(:errors, 0, :code)).to eq("invalid_query")
+    end
+
+    it "returns reserved_ip_address for a private IP" do
+      delete "/api/v1/geolocations/192.168.1.1", headers: headers
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(json.dig(:errors, 0, :code)).to eq("reserved_ip_address")
+    end
+  end
+end
+
+RSpec.describe "IPv6 support in GET and DELETE", type: :request do
+  let(:api_key) { ENV.fetch("API_KEY", "test-api-key") }
+  let(:headers) { { "Accept" => "application/vnd.api+json", "X-Api-Key" => api_key } }
+  let(:ipv6) { "2001:4860:4860::8888" }
+  let!(:geolocation) do
+    Geolocation.create!(ip: ipv6, ip_type: "ipv6", latitude: 37.386, longitude: -122.0838)
+  end
+
+  it "GET returns geolocation by IPv6 address" do
+    get "/api/v1/geolocations/#{ipv6}", headers: headers
+
+    expect(response).to have_http_status(:ok)
+    expect(response.parsed_body.dig("data", "attributes", "ip")).to eq(ipv6)
+  end
+
+  it "DELETE removes geolocation by IPv6 address" do
+    delete "/api/v1/geolocations/#{ipv6}", headers: headers
+
+    expect(response).to have_http_status(:no_content)
+    expect(Geolocation.find_by(ip: ipv6)).to be_nil
   end
 end

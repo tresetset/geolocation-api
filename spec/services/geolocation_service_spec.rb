@@ -61,6 +61,22 @@ RSpec.describe GeolocationService do
       end
     end
 
+    context "concurrent requests for the same IP" do
+      it "returns :ok and does not raise when a race condition triggers RecordNotUnique" do
+        existing = Geolocation.create!(ip: "8.8.8.8", ip_type: "ipv4", latitude: 37.386, longitude: -122.0838)
+
+        # Simulate the race: find_or_initialize_by returns a new record (not yet persisted),
+        # but the INSERT fails because another request already committed the row.
+        new_record = Geolocation.new(ip: "8.8.8.8")
+        allow(Geolocation).to receive(:find_or_initialize_by).and_return(new_record)
+        allow(new_record).to receive(:update!).and_raise(ActiveRecord::RecordNotUnique)
+
+        result = service.call("8.8.8.8")
+        expect(result[:status]).to eq(:ok)
+        expect(result[:geolocation].id).to eq(existing.id)
+      end
+    end
+
     context "adapter errors" do
       it "does not persist a record when adapter raises ProviderUnavailable" do
         allow(provider).to receive(:lookup).and_raise(GeolocationProvider::ProviderUnavailable)

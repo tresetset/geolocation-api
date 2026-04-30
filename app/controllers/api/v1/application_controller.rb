@@ -15,6 +15,8 @@ module Api
       rescue_from QueryParser::ReservedIpAddress,  with: :reserved_ip_address
       rescue_from QueryParser::UnresolvableHost,   with: :unresolvable_host
 
+      rescue_from ActiveRecord::RecordInvalid, with: :record_invalid
+
       rescue_from GeolocationProvider::ProviderUnavailable,  with: :provider_unavailable
       rescue_from GeolocationProvider::ProviderRateLimited,  with: :provider_rate_limited
       rescue_from GeolocationProvider::ProviderError,        with: :provider_error
@@ -51,6 +53,18 @@ module Api
 
       def unresolvable_host
         render_query_error(code: "unresolvable_host", title: "Unresolvable host")
+      end
+
+      def record_invalid(exception)
+        errors = exception.record.errors.map do |error|
+          {
+            status: "422",
+            code: "invalid_#{error.attribute}",
+            title: error.full_message,
+            source: { pointer: "/data/attributes/#{error.attribute}" }
+          }
+        end
+        render json: { errors: errors }, status: :unprocessable_content
       end
 
       def provider_unavailable

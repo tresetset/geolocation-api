@@ -14,7 +14,8 @@ module Api
       end
 
       def show
-        geolocation = Geolocation.find(params[:id])
+        parsed = QueryParser.new(params[:id]).parse
+        geolocation = Geolocation.find_by!(ip: parsed[:ip])
         render json: GeolocationSerializer.new(geolocation).serializable_hash.merge(jsonapi: { version: "1.1" })
       end
 
@@ -28,7 +29,7 @@ module Api
         serialized = GeolocationSerializer.new(geolocation).serializable_hash.merge(jsonapi: { version: "1.1" })
 
         if result[:status] == :created
-          response.headers["Location"] = "/api/v1/geolocations/#{geolocation.id}"
+          response.headers["Location"] = "/api/v1/geolocations/#{geolocation.ip}"
           render json: serialized, status: :created
         else
           render json: serialized, status: :ok
@@ -36,7 +37,9 @@ module Api
       end
 
       def destroy
-        Geolocation.find(params[:id]).destroy!
+        parsed = QueryParser.new(params[:id]).parse
+        geolocation = Geolocation.find_by!(ip: parsed[:ip])
+        geolocation.destroy!
         head :no_content
       end
 

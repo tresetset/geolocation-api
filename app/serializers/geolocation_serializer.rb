@@ -18,6 +18,6 @@ class GeolocationSerializer
   end
 
   link :self do |geo|
-    "/api/v1/geolocations/#{geo.id}"
+    "/api/v1/geolocations/#{geo.ip}"
   end
 end
