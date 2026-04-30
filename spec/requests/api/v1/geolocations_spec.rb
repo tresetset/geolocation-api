@@ -418,14 +418,14 @@ RSpec.describe "GET /api/v1/geolocations/:query", type: :request do
     it "returns invalid_query for a malformed IP" do
       get "/api/v1/geolocations/not-an-ip", headers: headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(json.dig(:errors, 0, :code)).to eq("invalid_query")
     end
 
     it "returns reserved_ip_address for a private IP" do
       get "/api/v1/geolocations/10.0.0.1", headers: headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(json.dig(:errors, 0, :code)).to eq("reserved_ip_address")
     end
   end
@@ -487,14 +487,14 @@ RSpec.describe "DELETE /api/v1/geolocations/:id", type: :request do
     it "returns invalid_query for a malformed IP" do
       delete "/api/v1/geolocations/not-an-ip", headers: headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(json.dig(:errors, 0, :code)).to eq("invalid_query")
     end
 
     it "returns reserved_ip_address for a private IP" do
       delete "/api/v1/geolocations/192.168.1.1", headers: headers
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to have_http_status(:unprocessable_content)
       expect(json.dig(:errors, 0, :code)).to eq("reserved_ip_address")
     end
   end
