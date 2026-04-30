@@ -58,6 +58,7 @@
     <orderEntry type="library" scope="PROVIDED" name="debug (v1.11.1, rbenv: 4.0.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="diff-lcs (v1.6.2, rbenv: 4.0.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="dotenv (v3.2.0, rbenv: 4.0.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="dotenv-rails (v3.2.0, rbenv: 4.0.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="drb (v2.2.3, rbenv: 4.0.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="ed25519 (v1.4.0, rbenv: 4.0.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="erb (v6.0.4, rbenv: 4.0.2) [gem]" level="application" />

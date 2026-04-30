@@ -17,6 +17,10 @@ or
 
 **Local:**
 ```bash
+cp .env.example .env
+# edit .env:
+#   API_KEY           — any secret string of your choice
+#   IPSTACK_ACCESS_KEY — get a free key at https://ipstack.com (free plan is sufficient)
 bundle install
 bin/rails db:prepare db:seed
 ```

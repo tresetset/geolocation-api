@@ -2,12 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bf6418f1-d147-46f3-a9a0-46a3e62728f4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Gemfile" beforeDir="false" afterPath="$PROJECT_DIR$/Gemfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Gemfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Gemfile.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/api/v1/geolocations_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/controllers/api/v1/geolocations_controller.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/geolocation.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/geolocation.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/geolocation_service.rb" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/geolocation_service.rb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/spec/models/geolocation_spec.rb" beforeDir="false" afterPath="$PROJECT_DIR$/spec/models/geolocation_spec.rb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,6 +13,10 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/db/schema.rb" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/spec/cassettes/POST_/api/v1/geolocations/200_OK_refresh/returns_200_with_updated_geo_data_on_second_request_for_same_IP.yml" root0="SKIP_INSPECTION" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4,
@@ -139,7 +140,7 @@
       <option name="presentableId" value="Default" />
       <updated>1777535585643</updated>
       <workItem from="1777535586724" duration="865000" />
-      <workItem from="1777538665998" duration="8376000" />
+      <workItem from="1777538665998" duration="10737000" />
     </task>
     <servers />
   </component>
